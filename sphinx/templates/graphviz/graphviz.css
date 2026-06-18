@@ -10,3 +10,13 @@ img.graphviz {
 object.graphviz {
     max-width: 100%;
 }
+
+.graphviz-error {
+    border: 1px solid var(--color-problematic, #d9534f);
+    border-radius: 0.25rem;
+    padding: 0.75rem 1rem;
+}
+
+.graphviz-error-message {
+    margin: 0 0 0.5rem;
+}

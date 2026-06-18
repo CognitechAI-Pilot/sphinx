@@ -251,3 +251,10 @@ There are also these config values:
 
    .. versionadded:: 1.0
       Previously, output always was PNG.
+
+.. confval:: graphviz_allow_web
+   :type: :code-py:`bool`
+   :default: :code-py:`False`
+
+   If :code-py:`True`, Sphinx adds a Graphviz Online fallback link when local
+   ``dot`` rendering is unavailable in HTML builds.

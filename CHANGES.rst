@@ -4,6 +4,7 @@ Release 9.1.1 (in development)
 Bugs fixed
 ----------
 
+* #5: graphviz: show an HTML placeholder with DOT source and optional Graphviz Online fallback when ``dot`` is unavailable. (Contributed by @Chamodya-ka)
 * #14465: LaTeX: PDF build crash since LaTeX June 2026 release if tables are
   styled with ``'colorrows'`` (which is the default).
   Patch by Jean-François B.
