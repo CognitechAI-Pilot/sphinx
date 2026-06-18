@@ -125,6 +125,43 @@ def test_graphviz_svg_html(app: SphinxTestApp) -> None:
     assert '<ns0:a ns1:href="..#graphviz"' in image_content
 
 
+@pytest.mark.sphinx(
+    'html',
+    testroot='ext-graphviz',
+    confoverrides={'graphviz_dot': 'dot-command-not-found'},
+)
+def test_graphviz_missing_dot_html_placeholder(app: SphinxTestApp) -> None:
+    app.build(force_all=True)
+
+    content = (app.outdir / 'index.html').read_text(encoding='utf8')
+    assert (
+        "Graphviz 'dot-command-not-found' command not found. "
+        'Please install Graphviz to render this diagram.'
+    ) in content
+
+    raw_dot_re = r'<a href="(_images/graphviz-[^"]+\.dot)">View raw DOT source file</a>'
+    raw_dot_match = re.search(raw_dot_re, content)
+    assert raw_dot_match
+    assert (app.outdir / raw_dot_match.group(1)).is_file()
+
+
+@pytest.mark.sphinx(
+    'html',
+    testroot='ext-graphviz',
+    confoverrides={
+        'graphviz_allow_web': True,
+        'graphviz_dot': 'dot-command-not-found',
+    },
+)
+def test_graphviz_missing_dot_html_web_fallback(app: SphinxTestApp) -> None:
+    app.build(force_all=True)
+
+    content = (app.outdir / 'index.html').read_text(encoding='utf8')
+    assert 'Render with Graphviz Online' in content
+    assert 'https://dreampuf.github.io/GraphvizOnline/#' in content
+    assert 'digraph%20foo%20%7B%0Abar%20-%3E%20baz%0A%7D%0A' in content
+
+
 @pytest.mark.sphinx('latex', testroot='ext-graphviz')
 @pytest.mark.usefixtures('if_graphviz_found')
 def test_graphviz_latex(app: SphinxTestApp) -> None:
