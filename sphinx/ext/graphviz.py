@@ -10,7 +10,7 @@ from hashlib import sha1
 from itertools import chain
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import quote, urlsplit, urlunsplit
 
 from docutils import nodes
 from docutils.parsers.rst import directives
@@ -377,7 +377,49 @@ def render_dot_html(
     imgcls = ' '.join(filter(None, classes))
 
     if fname is None:
-        self.body.append(self.encode(code))
+        graphviz_dot = options.get('graphviz_dot', self.builder.config.graphviz_dot)
+        hashkey = ''.join((
+            code,
+            str(options),
+            str(graphviz_dot),
+            str(self.builder.config.graphviz_dot_args),
+        )).encode()
+        dot_fname = f'{prefix}-{sha1(hashkey, usedforsecurity=False).hexdigest()}.dot'
+        dot_relfn = _StrPath(self.builder.imgpath, dot_fname)
+        dot_outfn = self.builder.outdir / self.builder.imagedir / dot_fname
+        dot_outfn.parent.mkdir(parents=True, exist_ok=True)
+        dot_outfn.write_text(code, encoding='utf-8')
+
+        message = (
+            __(
+                'Graphviz %r command not found. '
+                'Please install Graphviz to render this diagram.'
+            )
+            % graphviz_dot
+        )
+        self.body.append('<div class="graphviz graphviz-error">')
+        self.body.append(
+            f'<p class="graphviz-error-message">{self.encode(message)}</p>'
+        )
+        self.body.append(
+            '<p>'
+            f'<a href="{dot_relfn.as_posix()}">'
+            f'{self.encode(__("View raw DOT source file"))}'
+            '</a>'
+            '</p>'
+        )
+        if self.builder.config.graphviz_allow_web:
+            web_url = 'https://dreampuf.github.io/GraphvizOnline/#' + quote(
+                code, safe="-_.!~*'()"
+            )
+            self.body.append(
+                '<p>'
+                f'<a href="{web_url}" target="_blank" rel="noopener noreferrer">'
+                f'{self.encode(__("Render with Graphviz Online"))}'
+                '</a>'
+                '</p>'
+            )
+        self.body.append('</div>\n')
     else:
         src = fname.as_posix()
         if alt is None:
@@ -528,6 +570,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_config_value(
         'graphviz_output_format', 'png', 'html', types=frozenset({str})
     )
+    app.add_config_value('graphviz_allow_web', False, 'html', types=frozenset({bool}))
     app.add_css_file('graphviz.css')
     app.connect('config-inited', on_config_inited)
     return {
