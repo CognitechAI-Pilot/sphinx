@@ -1,6 +1,15 @@
 Release 9.1.1 (in development)
 ==============================
 
+Documentation
+-------------
+
+* #14473: Add an AI policy page to the project documentation.
+  Patch by Jared Dillard.
+* #14487: Document the ``graphviz`` external tool requirement for
+  :mod:`sphinx.ext.graphviz`.
+  Patch by Tim Pillinger.
+
 Bugs fixed
 ----------
 
